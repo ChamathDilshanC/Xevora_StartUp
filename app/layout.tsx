@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Xevora - Your Digital Marketplace',
-  description: 'Discover amazing products and services at Xevora',
+  title: 'Xevora - Your Clothing Marketplace',
+  description: 'Discover amazing clothing and accessories at Xevora',
   icons: {
     icon: '/Logos/AppLogo.png',
     shortcut: '/Logos/AppLogo.png',
