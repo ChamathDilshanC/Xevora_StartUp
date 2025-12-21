@@ -10,12 +10,18 @@ import {
   NavBody,
   NavItems,
 } from '@/components/ui/resizable-navbar';
-import { ShoppingCart, User } from 'lucide-react';
-import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { signOut } from '@/lib/auth';
+import { ChevronDown, LogOut, ShoppingCart, User } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Change to true to simulate logged-in state
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   const navItems = [
     { name: 'Home', link: '#home' },
@@ -25,6 +31,34 @@ export default function Home() {
     { name: 'Contact', link: '#contact' },
   ];
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.profile-menu-container')) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+      setShowProfileMenu(false);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-zinc-50 font-sans dark:bg-black">
       {/* Navbar */}
@@ -33,7 +67,7 @@ export default function Home() {
         <NavBody>
           {/* Logo */}
           <a
-            href="#"
+            href="/"
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
           >
             <img
@@ -50,7 +84,7 @@ export default function Home() {
           <NavItems items={navItems} />
 
           {/* Cart and Auth Section */}
-          <div className="flex items-center gap-3">
+          <div className="relative z-20 flex items-center gap-6">
             {/* Cart Button */}
             <button
               className="relative rounded-full p-2 text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
@@ -63,20 +97,86 @@ export default function Home() {
               </span>
             </button>
 
-            {/* Register/Login Link */}
-            {!isLoggedIn ? (
-              <a
-                href="#register"
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
-              >
-                <User className="h-4 w-4" />
-                <span>Register</span>
-              </a>
+            {/* Register/Login Link or Profile Menu */}
+            {loading ? (
+              <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+            ) : !user ? (
+              <div className="relative">
+                <a
+                  href="/auth"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Register</span>
+                </a>
+                {/* Tooltip Alert */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 1,
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: 'reverse',
+                    repeatDelay: 3,
+                  }}
+                  className="absolute -bottom-12 right-0 whitespace-nowrap rounded-lg bg-gradient-to-r from-[#3b3be4] to-[#5b5bff] px-3 py-1.5 text-xs font-medium text-white shadow-lg"
+                >
+                  <div className="relative">
+                    👋 Please sign up to get started!
+                    {/* Arrow pointing up */}
+                    <div className="absolute -top-3 right-4 h-0 w-0 border-b-[6px] border-l-[6px] border-r-[6px] border-b-[#3b3be4] border-l-transparent border-r-transparent" />
+                  </div>
+                </motion.div>
+              </div>
             ) : (
-              <button className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </button>
+              <div className="relative profile-menu-container">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
+                >
+                  {user.photoURL ? (
+                    <div className="h-6 w-6 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={user.photoURL}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                  <span className="max-w-[100px] truncate">
+                    {user.displayName || user.email?.split('@')[0] || 'Profile'}
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-neutral-900">
+                    <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {user.displayName || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </NavBody>
@@ -135,10 +235,10 @@ export default function Home() {
                 </span>
               </button>
 
-              {/* Register/Login Link */}
-              {!isLoggedIn ? (
+              {/* Register/Login Link or Profile with Sign Out */}
+              {!user ? (
                 <a
-                  href="#register"
+                  href="/auth"
                   className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
                   onClick={() => setIsOpen(false)}
                 >
@@ -146,13 +246,40 @@ export default function Home() {
                   <span className="font-medium">Register</span>
                 </a>
               ) : (
-                <button
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <User className="h-5 w-5" />
-                  <span className="font-medium">Profile</span>
-                </button>
+                <>
+                  <div className="flex w-full items-center gap-3 rounded-lg px-4 py-3 bg-gray-50 dark:bg-neutral-800">
+                    {user.photoURL ? (
+                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={user.photoURL}
+                          alt="Profile"
+                          className="h-full w-full object-cover"
+                          onError={e => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <User className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {user.displayName || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-600 transition-colors duration-300 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
+                </>
               )}
             </div>
           </MobileNavMenu>

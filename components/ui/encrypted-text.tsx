@@ -62,9 +62,9 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const lastFlipTimeRef = useRef<number>(0);
-  const scrambleCharsRef = useRef<string[]>(
-    text ? generateGibberishPreservingSpaces(text, charset).split('') : []
-  );
+  // Initialize with original text to prevent hydration mismatch
+  // Random gibberish will be generated after mount
+  const scrambleCharsRef = useRef<string[]>(text ? text.split('') : []);
 
   // Prevent hydration mismatch by only running animations on client
   useEffect(() => {
@@ -132,7 +132,7 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
 
   if (!text) return null;
 
-  // During SSR or before mount, show the encrypted text statically
+  // During SSR or before mount, show the original text to prevent hydration mismatch
   if (!mounted) {
     return (
       <motion.span
@@ -143,7 +143,7 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
       >
         {text.split('').map((char, index) => (
           <span key={index} className={cn(encryptedClassName)}>
-            {char === ' ' ? ' ' : scrambleCharsRef.current[index] ?? char}
+            {char}
           </span>
         ))}
       </motion.span>
