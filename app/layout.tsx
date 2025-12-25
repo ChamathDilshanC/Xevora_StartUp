@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: 'Xevora - Your Clothing Marketplace',
   description: 'Discover amazing clothing and accessories at Xevora',
   icons: {
-    icon: '/Logos/AppLogo.png',
-    shortcut: '/Logos/AppLogo.png',
-    apple: '/Logos/AppLogo.png',
+    icon: '/Logos/HeroLogo.png',
+    shortcut: '/Logos/HeroLogo.png',
+    apple: '/Logos/HeroLogo.png',
   },
 };
 

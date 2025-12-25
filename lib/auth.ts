@@ -14,6 +14,8 @@ import { auth, db } from './firebase';
 
 // Initialize providers
 const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
 const appleProvider = new OAuthProvider('apple.com');
 
 // User data interface

@@ -71,7 +71,7 @@ export default function Home() {
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
           >
             <img
-              src="/Logos/AppLogo.png"
+              src="/Logos/HeroLogo.png"
               alt="Xevora Logo"
               className="h-8 w-8 object-contain"
             />
@@ -136,19 +136,54 @@ export default function Home() {
                   className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors duration-300 hover:bg-gray-100 hover:text-[#3b3be4] dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-[#3b3be4]"
                 >
                   {user.photoURL ? (
-                    <div className="h-6 w-6 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    <div className="h-6 w-6 rounded-full overflow-hidden bg-gradient-to-br from-[#3b3be4] to-[#5b5bff] flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={user.photoURL}
                         alt="Profile"
                         className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onLoad={e => {
+                          console.log(
+                            '✅ Profile image loaded successfully:',
+                            user.photoURL
+                          );
+                        }}
                         onError={e => {
-                          e.currentTarget.style.display = 'none';
+                          console.error(
+                            '❌ Profile image failed to load:',
+                            user.photoURL
+                          );
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            e.currentTarget.style.display = 'none';
+                            const initials = (
+                              user.displayName ||
+                              user.email ||
+                              'U'
+                            )
+                              .split(' ')
+                              .map(n => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2);
+                            parent.innerHTML = `<span class="text-xs font-semibold text-white">${initials}</span>`;
+                          }
                         }}
                       />
                     </div>
                   ) : (
-                    <User className="h-4 w-4" />
+                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#3b3be4] to-[#5b5bff] flex items-center justify-center">
+                      <span className="text-xs font-semibold text-white">
+                        {(user.displayName || user.email || 'U')
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </span>
+                    </div>
                   )}
                   <span className="max-w-[100px] truncate">
                     {user.displayName || user.email?.split('@')[0] || 'Profile'}
@@ -190,7 +225,7 @@ export default function Home() {
               className="relative z-20 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
             >
               <img
-                src="/Logos/AppLogo.png"
+                src="/Logos/BrandLogo.png"
                 alt="Xevora Logo"
                 className="h-8 w-8 object-contain"
               />
@@ -249,19 +284,54 @@ export default function Home() {
                 <>
                   <div className="flex w-full items-center gap-3 rounded-lg px-4 py-3 bg-gray-50 dark:bg-neutral-800">
                     {user.photoURL ? (
-                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-[#3b3be4] to-[#5b5bff] flex items-center justify-center flex-shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={user.photoURL}
                           alt="Profile"
                           className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                          onLoad={e => {
+                            console.log(
+                              '✅ Mobile profile image loaded successfully:',
+                              user.photoURL
+                            );
+                          }}
                           onError={e => {
-                            e.currentTarget.style.display = 'none';
+                            console.error(
+                              '❌ Mobile profile image failed to load:',
+                              user.photoURL
+                            );
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              e.currentTarget.style.display = 'none';
+                              const initials = (
+                                user.displayName ||
+                                user.email ||
+                                'U'
+                              )
+                                .split(' ')
+                                .map(n => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2);
+                              parent.innerHTML = `<span class="text-sm font-semibold text-white">${initials}</span>`;
+                            }
                           }}
                         />
                       </div>
                     ) : (
-                      <User className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#3b3be4] to-[#5b5bff] flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-semibold text-white">
+                          {(user.displayName || user.email || 'U')
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </span>
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
